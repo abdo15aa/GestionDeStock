@@ -19,7 +19,8 @@ public class MainApp extends Application {
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
             primaryStage.setTitle("Système de Gestion de Stock - POO Java");
-            primaryStage.setResizable(false);
+            primaryStage.setResizable(true);
+            primaryStage.setMaximized(false);
             primaryStage.show();
         } catch (IOException e) {
             System.err.println("Erreur de chargement du fichier FXML principal : " + e.getMessage());

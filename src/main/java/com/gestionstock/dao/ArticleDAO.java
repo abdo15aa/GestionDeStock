@@ -63,6 +63,27 @@ public class ArticleDAO implements DAO<Article> {
         return null;
     }
 
+    public Article findByName(String nom) {
+        String sql = "SELECT * FROM Article WHERE LOWER(nom) = LOWER(?) LIMIT 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nom.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Article(
+                            rs.getInt("idArticle"),
+                            rs.getString("nom"),
+                            rs.getInt("quantite"),
+                            rs.getInt("seuilAlerte")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public boolean update(Article a) {
         String sql = "UPDATE Article SET nom = ?, quantite = ?, seuilAlerte = ? WHERE idArticle = ?";

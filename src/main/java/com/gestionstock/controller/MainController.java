@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainController {
@@ -56,7 +57,7 @@ public class MainController {
     @FXML private TableColumn<Article, Integer> colArtQte;
     @FXML private TableColumn<Article, Integer> colArtSeuil;
 
-    @FXML private ComboBox<Fournisseur> cmbArticleFournisseur;
+    @FXML private ListView<Fournisseur> lstArticleFournisseurs;
     @FXML private TextField txtArtFournNom;
     @FXML private TextField txtArtFournContact;
 
@@ -134,6 +135,17 @@ public class MainController {
         // Charger les données de la base de données
         loadData();
 
+        // Autoriser la sélection multiple de fournisseurs et activer les champs texte du fournisseur
+        lstArticleFournisseurs.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        txtArtFournNom.setDisable(false);
+        txtArtFournNom.setEditable(true);
+        txtArtFournContact.setDisable(false);
+        txtArtFournContact.setEditable(true);
+        txtFournNom.setDisable(false);
+        txtFournNom.setEditable(true);
+        txtFournContact.setDisable(false);
+        txtFournContact.setEditable(true);
+
         // Initialiser le badge de notifications
         setupNotificationBadge();
 
@@ -192,7 +204,7 @@ public class MainController {
             // Affecter les listes aux tables
             tblArticles.setItems(articleList);
             tblFournisseurs.setItems(fournisseurList);
-            cmbArticleFournisseur.setItems(fournisseurList);
+            lstArticleFournisseurs.setItems(fournisseurList);
             tblMouvements.setItems(mouvementList);
             tblNotifications.setItems(notificationList);
             
@@ -224,16 +236,16 @@ public class MainController {
         txtArtQte.clear();
         txtArtSeuil.clear();
         txtArtQte.setDisable(false);
-        cmbArticleFournisseur.getSelectionModel().clearSelection();
+        lstArticleFournisseurs.getSelectionModel().clearSelection();
         txtArtFournNom.clear();
         txtArtFournContact.clear();
         tblArticles.getSelectionModel().clearSelection();
     }
 
-    private int determineArticleFournisseurId() {
-        Fournisseur selectedFournisseur = cmbArticleFournisseur.getValue();
-        if (selectedFournisseur != null) {
-            return selectedFournisseur.getIdFournisseur();
+    private List<Integer> determineArticleFournisseurIds() {
+        List<Integer> fournisseurIds = new ArrayList<>();
+        for (Fournisseur fournisseur : lstArticleFournisseurs.getSelectionModel().getSelectedItems()) {
+            fournisseurIds.add(fournisseur.getIdFournisseur());
         }
 
         String newFournNom = txtArtFournNom.getText().trim();
@@ -242,14 +254,14 @@ public class MainController {
             Fournisseur newFournisseur = new Fournisseur(newFournNom, newFournContact);
             if (fournisseurDAO.create(newFournisseur)) {
                 fournisseurList.add(newFournisseur);
-                return newFournisseur.getIdFournisseur();
+                fournisseurIds.add(newFournisseur.getIdFournisseur());
             } else {
                 showError("Erreur fournisseur", "Impossible de créer le nouveau fournisseur.");
-                return -1;
+                return null;
             }
         }
 
-        return 0;
+        return fournisseurIds;
     }
 
     private boolean validateArticleFields() {
@@ -383,14 +395,19 @@ public class MainController {
             int qte = Integer.parseInt(txtArtQte.getText().trim());
             int seuil = Integer.parseInt(txtArtSeuil.getText().trim());
 
+            if (articleDAO.findByName(nom) != null) {
+                showWarning("Article déjà existant", "Le nom d'article existe déjà. Utilisez la modification pour le mettre à jour.");
+                return;
+            }
+
             Article a = new Article(nom, qte, seuil);
             if (articleDAO.create(a)) {
-                int fournisseurId = determineArticleFournisseurId();
-                if (fournisseurId > 0) {
-                    fournisseurDAO.associateArticle(fournisseurId, a.getIdArticle());
-                } else if (fournisseurId == -1) {
-                    // erreur de création fournisseur déjà affichée
+                List<Integer> fournisseurIds = determineArticleFournisseurIds();
+                if (fournisseurIds == null) {
                     return;
+                }
+                for (Integer fournisseurId : fournisseurIds) {
+                    fournisseurDAO.associateArticle(fournisseurId, a.getIdArticle());
                 }
 
                 showInfo("Succès", "L'article a été ajouté avec succès.");
@@ -411,7 +428,14 @@ public class MainController {
         }
 
         if (validateArticleFields()) {
-            selected.setNom(txtArtNom.getText());
+            String nom = txtArtNom.getText().trim();
+            Article articleByName = articleDAO.findByName(nom);
+            if (articleByName != null && articleByName.getIdArticle() != selected.getIdArticle()) {
+                showWarning("Article déjà existant", "Un autre article utilise déjà ce nom. Choisissez un autre nom.");
+                return;
+            }
+
+            selected.setNom(nom);
             selected.setQuantite(Integer.parseInt(txtArtQte.getText()));
             selected.setSeuilAlerte(Integer.parseInt(txtArtSeuil.getText()));
 

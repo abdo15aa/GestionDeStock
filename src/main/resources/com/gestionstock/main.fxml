@@ -82,11 +82,11 @@
                     <TextField fx:id="txtArtQte" promptText="Ex: 50"/>
                     <Label text="Seuil d'Alerte :" textFill="#bac2de"/>
                     <TextField fx:id="txtArtSeuil" promptText="Ex: 10"/>
-                    <Label text="Fournisseur existant :" textFill="#bac2de"/>
-                    <ComboBox fx:id="cmbArticleFournisseur" promptText="Choisir un fournisseur"/>
+                    <Label text="Fournisseurs existants (sélection multiple) :" textFill="#bac2de"/>
+                    <ListView fx:id="lstArticleFournisseurs" prefHeight="120" />
                     <Label text="OU nouveau fournisseur (optionnel) :" textFill="#bac2de"/>
-                    <TextField fx:id="txtArtFournNom" promptText="Nom du fournisseur"/>
-                    <TextField fx:id="txtArtFournContact" promptText="Email ou téléphone"/>
+                    <TextField fx:id="txtArtFournNom" promptText="Nom du fournisseur" editable="true"/>
+                    <TextField fx:id="txtArtFournContact" promptText="Email ou téléphone" editable="true"/>
                     <HBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
                         <Button text="Ajouter" styleClass="btn-primary" onAction="#addArticle"/>
                         <Button text="Modifier" styleClass="btn-secondary" onAction="#updateArticle"/>
@@ -112,9 +112,9 @@
                 <VBox styleClass="form-container">
                     <Label text="Formulaire Fournisseur" styleClass="form-title"/>
                     <Label text="Nom :" textFill="#bac2de"/>
-                    <TextField fx:id="txtFournNom" promptText="Ex: Dell, HP..."/>
+                    <TextField fx:id="txtFournNom" promptText="Ex: Dell, HP..." editable="true"/>
                     <Label text="Contact :" textFill="#bac2de"/>
-                    <TextField fx:id="txtFournContact" promptText="Ex: contact@dell.com"/>
+                    <TextField fx:id="txtFournContact" promptText="Ex: contact@dell.com" editable="true"/>
                     <HBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
                         <Button text="Ajouter" styleClass="btn-primary" onAction="#addFournisseur"/>
                         <Button text="Modifier" styleClass="btn-secondary" onAction="#updateFournisseur"/>
