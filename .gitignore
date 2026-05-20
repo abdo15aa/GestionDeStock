@@ -1,0 +1,38 @@
+# Maven
+target/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+out/
+
+# Archives
+*.zip
+
+# Database / Secrets
+src/main/resources/db.properties
+secret.properties
+
+# Build
+/mvnw
+/mvnw.cmd
+
+# Generated
+/generated-sources/
+
+# Other
+*.keystore
