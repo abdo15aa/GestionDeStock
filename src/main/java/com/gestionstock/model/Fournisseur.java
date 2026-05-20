@@ -4,6 +4,7 @@ public class Fournisseur {
     private int idFournisseur;
     private String nom;
     private String contact;
+    private String articles;
 
     public Fournisseur() {}
 
@@ -40,6 +41,14 @@ public class Fournisseur {
 
     public void setContact(String contact) {
         this.contact = contact;
+    }
+
+    public String getArticles() {
+        return articles;
+    }
+
+    public void setArticles(String articles) {
+        this.articles = articles;
     }
 
     @Override

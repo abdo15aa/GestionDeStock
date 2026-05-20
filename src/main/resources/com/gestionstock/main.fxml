@@ -67,9 +67,10 @@
                     <TableView fx:id="tblArticles" VBox.vgrow="ALWAYS" onMouseClicked="#onArticleSelected">
                         <columns>
                             <TableColumn fx:id="colArtId" text="ID" prefWidth="60"/>
-                            <TableColumn fx:id="colArtNom" text="Désignation" prefWidth="250"/>
-                            <TableColumn fx:id="colArtQte" text="Quantité en Stock" prefWidth="150"/>
-                            <TableColumn fx:id="colArtSeuil" text="Seuil d'Alerte" prefWidth="150"/>
+                            <TableColumn fx:id="colArtNom" text="Désignation" prefWidth="220"/>
+                            <TableColumn fx:id="colArtFournisseur" text="Fournisseur(s)" prefWidth="220"/>
+                            <TableColumn fx:id="colArtQte" text="Quantité en Stock" prefWidth="130"/>
+                            <TableColumn fx:id="colArtSeuil" text="Seuil d'Alerte" prefWidth="130"/>
                         </columns>
                     </TableView>
                 </VBox>
@@ -81,6 +82,11 @@
                     <TextField fx:id="txtArtQte" promptText="Ex: 50"/>
                     <Label text="Seuil d'Alerte :" textFill="#bac2de"/>
                     <TextField fx:id="txtArtSeuil" promptText="Ex: 10"/>
+                    <Label text="Fournisseur existant :" textFill="#bac2de"/>
+                    <ComboBox fx:id="cmbArticleFournisseur" promptText="Choisir un fournisseur"/>
+                    <Label text="OU nouveau fournisseur (optionnel) :" textFill="#bac2de"/>
+                    <TextField fx:id="txtArtFournNom" promptText="Nom du fournisseur"/>
+                    <TextField fx:id="txtArtFournContact" promptText="Email ou téléphone"/>
                     <HBox spacing="10.0" style="-fx-padding: 10 0 0 0;">
                         <Button text="Ajouter" styleClass="btn-primary" onAction="#addArticle"/>
                         <Button text="Modifier" styleClass="btn-secondary" onAction="#updateArticle"/>
@@ -96,9 +102,10 @@
                     <Label text="Gestion des Fournisseurs" styleClass="content-title"/>
                     <TableView fx:id="tblFournisseurs" VBox.vgrow="ALWAYS" onMouseClicked="#onFournisseurSelected">
                         <columns>
-                            <TableColumn fx:id="colFournId" text="ID" prefWidth="80"/>
-                            <TableColumn fx:id="colFournNom" text="Nom du Fournisseur" prefWidth="250"/>
-                            <TableColumn fx:id="colFournContact" text="Contact (Email/Tél)" prefWidth="280"/>
+                            <TableColumn fx:id="colFournId" text="ID" prefWidth="70"/>
+                            <TableColumn fx:id="colFournNom" text="Nom du Fournisseur" prefWidth="220"/>
+                            <TableColumn fx:id="colFournContact" text="Contact (Email/Tél)" prefWidth="220"/>
+                            <TableColumn fx:id="colFournArticles" text="Articles associés" prefWidth="260"/>
                         </columns>
                     </TableView>
                 </VBox>

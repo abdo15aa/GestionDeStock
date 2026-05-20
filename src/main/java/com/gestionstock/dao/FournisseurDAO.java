@@ -83,16 +83,24 @@ public class FournisseurDAO implements DAO<Fournisseur> {
     @Override
     public List<Fournisseur> findAll() {
         List<Fournisseur> list = new ArrayList<>();
-        String sql = "SELECT * FROM Fournisseur";
+        String sql = "SELECT f.idFournisseur, f.nom, f.contact, " +
+                     "GROUP_CONCAT(DISTINCT a.nom SEPARATOR ', ') AS articles " +
+                     "FROM Fournisseur f " +
+                     "LEFT JOIN FournisseurArticle fa ON f.idFournisseur = fa.idFournisseur " +
+                     "LEFT JOIN Article a ON fa.idArticle = a.idArticle " +
+                     "GROUP BY f.idFournisseur, f.nom, f.contact";
         try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                list.add(new Fournisseur(
+                Fournisseur fournisseur = new Fournisseur(
                         rs.getInt("idFournisseur"),
                         rs.getString("nom"),
                         rs.getString("contact")
-                ));
+                );
+                String articles = rs.getString("articles");
+                fournisseur.setArticles(articles != null ? articles : "");
+                list.add(fournisseur);
             }
         } catch (SQLException e) {
             e.printStackTrace();

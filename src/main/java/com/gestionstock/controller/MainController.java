@@ -52,13 +52,19 @@ public class MainController {
     @FXML private TableView<Article> tblArticles;
     @FXML private TableColumn<Article, Integer> colArtId;
     @FXML private TableColumn<Article, String> colArtNom;
+    @FXML private TableColumn<Article, String> colArtFournisseur;
     @FXML private TableColumn<Article, Integer> colArtQte;
     @FXML private TableColumn<Article, Integer> colArtSeuil;
+
+    @FXML private ComboBox<Fournisseur> cmbArticleFournisseur;
+    @FXML private TextField txtArtFournNom;
+    @FXML private TextField txtArtFournContact;
 
     @FXML private TableView<Fournisseur> tblFournisseurs;
     @FXML private TableColumn<Fournisseur, Integer> colFournId;
     @FXML private TableColumn<Fournisseur, String> colFournNom;
     @FXML private TableColumn<Fournisseur, String> colFournContact;
+    @FXML private TableColumn<Fournisseur, String> colFournArticles;
 
     @FXML private TableView<MouvementStock> tblMouvements;
     @FXML private TableColumn<MouvementStock, Integer> colMouvId;
@@ -148,6 +154,7 @@ public class MainController {
         // Table Articles
         colArtId.setCellValueFactory(new PropertyValueFactory<>("idArticle"));
         colArtNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colArtFournisseur.setCellValueFactory(new PropertyValueFactory<>("fournisseurs"));
         colArtQte.setCellValueFactory(new PropertyValueFactory<>("quantite"));
         colArtSeuil.setCellValueFactory(new PropertyValueFactory<>("seuilAlerte"));
 
@@ -155,6 +162,7 @@ public class MainController {
         colFournId.setCellValueFactory(new PropertyValueFactory<>("idFournisseur"));
         colFournNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colFournContact.setCellValueFactory(new PropertyValueFactory<>("contact"));
+        colFournArticles.setCellValueFactory(new PropertyValueFactory<>("articles"));
 
         // Table Mouvements
         colMouvId.setCellValueFactory(new PropertyValueFactory<>("idMouvement"));
@@ -184,6 +192,7 @@ public class MainController {
             // Affecter les listes aux tables
             tblArticles.setItems(articleList);
             tblFournisseurs.setItems(fournisseurList);
+            cmbArticleFournisseur.setItems(fournisseurList);
             tblMouvements.setItems(mouvementList);
             tblNotifications.setItems(notificationList);
             
@@ -203,6 +212,63 @@ public class MainController {
             showError("Erreur de chargement", "Impossible de récupérer les données depuis la base de données. Vérifiez votre connexion MySQL.");
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void clearArticleForm(ActionEvent event) {
+        clearArticleForm();
+    }
+
+    private void clearArticleForm() {
+        txtArtNom.clear();
+        txtArtQte.clear();
+        txtArtSeuil.clear();
+        txtArtQte.setDisable(false);
+        cmbArticleFournisseur.getSelectionModel().clearSelection();
+        txtArtFournNom.clear();
+        txtArtFournContact.clear();
+        tblArticles.getSelectionModel().clearSelection();
+    }
+
+    private int determineArticleFournisseurId() {
+        Fournisseur selectedFournisseur = cmbArticleFournisseur.getValue();
+        if (selectedFournisseur != null) {
+            return selectedFournisseur.getIdFournisseur();
+        }
+
+        String newFournNom = txtArtFournNom.getText().trim();
+        String newFournContact = txtArtFournContact.getText().trim();
+        if (!newFournNom.isEmpty()) {
+            Fournisseur newFournisseur = new Fournisseur(newFournNom, newFournContact);
+            if (fournisseurDAO.create(newFournisseur)) {
+                fournisseurList.add(newFournisseur);
+                return newFournisseur.getIdFournisseur();
+            } else {
+                showError("Erreur fournisseur", "Impossible de créer le nouveau fournisseur.");
+                return -1;
+            }
+        }
+
+        return 0;
+    }
+
+    private boolean validateArticleFields() {
+        if (txtArtNom.getText().trim().isEmpty() || txtArtQte.getText().trim().isEmpty() || txtArtSeuil.getText().trim().isEmpty()) {
+            showWarning("Champs vides", "Veuillez remplir tous les champs de l'article.");
+            return false;
+        }
+        try {
+            int qte = Integer.parseInt(txtArtQte.getText().trim());
+            int seuil = Integer.parseInt(txtArtSeuil.getText().trim());
+            if (qte < 0 || seuil < 0) {
+                showWarning("Valeurs incorrectes", "La quantité et le seuil doivent être positifs.");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showWarning("Valeurs incorrectes", "La quantité et le seuil doivent être des nombres entiers.");
+            return false;
+        }
+        return true;
     }
 
     private void updateDashboardStats() {
@@ -313,12 +379,20 @@ public class MainController {
     @FXML
     void addArticle(ActionEvent event) {
         if (validateArticleFields()) {
-            String nom = txtArtNom.getText();
-            int qte = Integer.parseInt(txtArtQte.getText());
-            int seuil = Integer.parseInt(txtArtSeuil.getText());
+            String nom = txtArtNom.getText().trim();
+            int qte = Integer.parseInt(txtArtQte.getText().trim());
+            int seuil = Integer.parseInt(txtArtSeuil.getText().trim());
 
             Article a = new Article(nom, qte, seuil);
             if (articleDAO.create(a)) {
+                int fournisseurId = determineArticleFournisseurId();
+                if (fournisseurId > 0) {
+                    fournisseurDAO.associateArticle(fournisseurId, a.getIdArticle());
+                } else if (fournisseurId == -1) {
+                    // erreur de création fournisseur déjà affichée
+                    return;
+                }
+
                 showInfo("Succès", "L'article a été ajouté avec succès.");
                 loadData();
                 clearArticleForm();
@@ -385,33 +459,6 @@ public class MainController {
         }
     }
 
-    @FXML
-    void clearArticleForm() {
-        txtArtNom.clear();
-        txtArtQte.clear();
-        txtArtSeuil.clear();
-        txtArtQte.setDisable(false);
-        tblArticles.getSelectionModel().clearSelection();
-    }
-
-    private boolean validateArticleFields() {
-        if (txtArtNom.getText().trim().isEmpty() || txtArtQte.getText().trim().isEmpty() || txtArtSeuil.getText().trim().isEmpty()) {
-            showWarning("Champs vides", "Veuillez remplir tous les champs de l'article.");
-            return false;
-        }
-        try {
-            int qte = Integer.parseInt(txtArtQte.getText().trim());
-            int seuil = Integer.parseInt(txtArtSeuil.getText().trim());
-            if (qte < 0 || seuil < 0) {
-                showWarning("Valeurs incorrectes", "La quantité et le seuil doivent être positifs.");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            showWarning("Valeurs incorrectes", "La quantité et le seuil doivent être des nombres entiers.");
-            return false;
-        }
-        return true;
-    }
 
     // CRUD FOURNISSEURS
     @FXML

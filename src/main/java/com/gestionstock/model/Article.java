@@ -5,6 +5,7 @@ public class Article {
     private String nom;
     private int quantite;
     private int seuilAlerte;
+    private String fournisseurs;
 
     public Article() {}
 
@@ -19,6 +20,14 @@ public class Article {
         this.nom = nom;
         this.quantite = quantite;
         this.seuilAlerte = seuilAlerte;
+    }
+
+    public String getFournisseurs() {
+        return fournisseurs;
+    }
+
+    public void setFournisseurs(String fournisseurs) {
+        this.fournisseurs = fournisseurs;
     }
 
     public int getIdArticle() {
