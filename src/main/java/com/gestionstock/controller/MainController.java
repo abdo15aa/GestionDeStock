@@ -251,6 +251,11 @@ public class MainController {
         String newFournNom = txtArtFournNom.getText().trim();
         String newFournContact = txtArtFournContact.getText().trim();
         if (!newFournNom.isEmpty()) {
+            if (!isContactValid(newFournContact)) {
+                showWarning("Contact invalide", "Le contact du fournisseur doit être un email Gmail (ex: user@gmail.com) ou un numéro de téléphone valide (minimum 7 chiffres).");
+                return null;
+            }
+
             Fournisseur newFournisseur = new Fournisseur(newFournNom, newFournContact);
             if (fournisseurDAO.create(newFournisseur)) {
                 fournisseurList.add(newFournisseur);
@@ -495,6 +500,11 @@ public class MainController {
             return;
         }
 
+        if (!isContactValid(contact)) {
+            showWarning("Contact invalide", "Le contact doit être un email Gmail (ex: user@gmail.com) ou un numéro de téléphone valide (minimum 7 chiffres).");
+            return;
+        }
+
         Fournisseur f = new Fournisseur(nom, contact);
         if (fournisseurDAO.create(f)) {
             showInfo("Succès", "Fournisseur ajouté.");
@@ -518,6 +528,11 @@ public class MainController {
 
         if (nom.isEmpty()) {
             showWarning("Champ vide", "Le nom ne peut pas être vide.");
+            return;
+        }
+
+        if (!isContactValid(contact)) {
+            showWarning("Contact invalide", "Le contact doit être un email Gmail (ex: user@gmail.com) ou un numéro de téléphone valide (minimum 7 chiffres).");
             return;
         }
 
@@ -634,5 +649,23 @@ public class MainController {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private boolean isContactValid(String contact) {
+        if (contact.isEmpty()) {
+            return false;
+        }
+        
+        // Check if it's a valid Gmail address
+        if (contact.toLowerCase().matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$")) {
+            return true;
+        }
+        
+        // Check if it's a valid phone number (digits, spaces, dashes, plus sign)
+        if (contact.matches("^[\\d\\s+\\-().]*\\d[\\d\\s+\\-().]*$") && contact.length() >= 7) {
+            return true;
+        }
+        
+        return false;
     }
 }
